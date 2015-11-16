@@ -23,8 +23,12 @@ class DataViewController: UIViewController, AVAudioPlayerDelegate {
     
     
     let endPoint = "https://ynzghgnxp0.execute-api.ap-northeast-1.amazonaws.com/dev/gestures"
+//    let endPointDev = "https://dl.dropboxusercontent.com/u/263239/GestureData.json"
     let endPointDev = "https://dl.dropboxusercontent.com/u/206795/dummy.json"
+    var timesafe:Double = 0.1
     let timeout:Double = 3.0
+    var timesafeFlg = false
+    var minMode = false
     var _jsonData : AnyObject!
     var _jsonLoading : Bool = false
     var _gestures : [Gesture]!
@@ -49,7 +53,7 @@ class DataViewController: UIViewController, AVAudioPlayerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        self.updateJsonData()
+        self.updateJsonData(endPoint)
     }
     
     override func didReceiveMemoryWarning() {
@@ -68,10 +72,17 @@ class DataViewController: UIViewController, AVAudioPlayerDelegate {
     }
     
     @IBAction func reloadAction(sender: AnyObject) {
-        self.updateJsonData()
+        self.updateJsonData(endPoint)
+        self.minMode = false
+        self.timesafe = 0.1
+    }
+    @IBAction func reload2Action(sender: AnyObject) {
+        self.updateJsonData(endPointDev)
+        self.minMode = false//true
+        self.timesafe = 0.1
     }
     
-    func updateJsonData() {
+    func updateJsonData(path: String) {
         if self._jsonLoading {
             return
         }
@@ -79,7 +90,7 @@ class DataViewController: UIViewController, AVAudioPlayerDelegate {
         self._jsonData = nil
         
         Alamofire
-            .request(.GET, self.endPointDev)
+            .request(.GET, path)
             .responseJSON { (response) -> Void in
                 switch response.result {
                 case .Success:
@@ -119,6 +130,7 @@ class DataViewController: UIViewController, AVAudioPlayerDelegate {
     
     func memeRealTimeModeDataReceived(data: MEMERealTimeData!) {
         if self._jsonData != nil {
+
             let seconds = NSDate.timeIntervalSinceReferenceDate()
             let now:Double = seconds //* 1000
             if self._preTime == 0.0 {
@@ -157,6 +169,16 @@ class DataViewController: UIViewController, AVAudioPlayerDelegate {
             self.outPosY.text   = String(v[4])
             self.outPosZ.text   = String(v[5])
             self.outDelta.text  = String(v[6])
+            //データの遊び確保
+            if self.timesafeFlg {
+                if self._delta_sum > self.timesafe {
+                    self._delta_sum = 0.0
+                    self.timesafeFlg = false
+                } else {
+                    return;
+                }
+            }
+            
             
             for var i = 0; i<self._gestures.count; i++ {
                 var g = self._gestures[i]
@@ -172,7 +194,6 @@ class DataViewController: UIViewController, AVAudioPlayerDelegate {
                     cv += g.delta_sum
                     g.delta_sum = cv
                 }
-
                 //達成判定
                 if self.isOverValue(cv, tgVal: Double(tv)) {
                     g.delta_sum = 0.0
@@ -183,8 +204,17 @@ class DataViewController: UIViewController, AVAudioPlayerDelegate {
                         g.delta_sum = 0.0
                         self.resetAllGestures()
                         //play
-                        self._sounds[g.sound]!.play()
+                        if self.minMode {
+                            if ((self._sounds[g.sound]?.playing) != nil) {
+                                self._sounds[g.sound]?.pause()
+                            }
+                            self._sounds[g.sound]?.currentTime = 0.0;
+                        }
+                        self._sounds[g.sound]?.play()
+                        
                         g.exec_count += 1
+                        //一定時間判定ロック
+                        self.timesafeFlg = true
                     }
                 }
                 //更新
@@ -216,4 +246,71 @@ class DataViewController: UIViewController, AVAudioPlayerDelegate {
             return currentVal >= tgVal
         }
     }
+    
+    
+//MARK: Sound
+/*
+    struct AudioStreamBasicDescription {
+        var mSampleRate: Float64
+        var mFormatID: UInt32
+        var mFormatFlags: UInt32
+        var mBytesPerPacket: UInt32
+        var mFramesPerPacket: UInt32
+        var mBytesPerFrame: UInt32
+        var mChannelsPerFrame: UInt32
+        var mBitsPerChannel: UInt32
+        var mReserved: UInt32
+    };
+    
+    func queuePlay(path: String) {
+        var status:OSStatus
+        var size:UInt32
+        
+        // オーディオファイルを開く
+        var audioFileId: AudioFileID = nil
+        status = AudioFileOpenURL(
+            NSURL.fileURLWithPath(path),
+            AudioFilePermissions.ReadPermission,
+            0,
+            &audioFileId)
+        
+        // オーディオデータフォーマットを取得する
+        var audioBasicDesc: AudioStreamBasicDescription = AudioStreamBasicDescription(
+            mSampleRate: 44100,
+            mFormatID: AudioFormatID(kAudioFormatLinearPCM),
+            mFormatFlags: AudioFormatFlags(kLinearPCMFormatFlagIsBigEndian | kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked),
+            mBytesPerPacket: 2,
+            mFramesPerPacket: 1,
+            mBytesPerFrame: 2,
+            mChannelsPerFrame: 1,
+            mBitsPerChannel: 16,
+            mReserved: 0
+        )
+        size = UInt32(sizeof(AudioStreamBasicDescription))
+        status = AudioFileGetProperty(
+            audioFileId,
+            UInt32(kAudioFilePropertyDataFormat),
+            &size,
+            &audioBasicDesc)
+        
+        // オーディオキューを作成する
+        var audioQueue: AudioQueueRef
+        AudioQueueNewOutput(
+            &audioBasicDesc,
+            queueCallback,
+            nil,
+            CFRunLoopGetCurrent(),
+            kCFRunLoopCommonModes,
+            0,
+            &audioQueue)
+//        status = AudioQueueNewOutput(
+//            &audioBasicDesc,
+//            audioQueueOutputCallback, self,
+//            CFRunLoopGetCurrent(), kCFRunLoopCommonModes, 0, audioQueue);
+    }
+    
+    func queueCallback() {
+        
+    }
+*/
 }
