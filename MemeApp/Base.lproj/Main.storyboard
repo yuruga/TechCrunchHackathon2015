@@ -68,9 +68,9 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BaR-fn-OwN">
-                                <rect key="frame" x="488" y="20" width="92" height="30"/>
+                                <rect key="frame" x="336" y="20" width="92" height="30"/>
                                 <animations/>
-                                <state key="normal" title="Reload"/>
+                                <state key="normal" title="ReloadA"/>
                                 <connections>
                                     <action selector="reloadAction:" destination="VV3-6J-fbo" eventType="touchUpInside" id="hfM-zx-zj9"/>
                                 </connections>
@@ -173,6 +173,14 @@
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ORv-Nl-12H">
+                                <rect key="frame" x="488" y="20" width="92" height="30"/>
+                                <animations/>
+                                <state key="normal" title="ReloadB"/>
+                                <connections>
+                                    <action selector="reload2Action:" destination="VV3-6J-fbo" eventType="touchUpInside" id="Xcu-cs-JmY"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <animations/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>

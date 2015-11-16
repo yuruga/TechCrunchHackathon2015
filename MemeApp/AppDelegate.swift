@@ -15,9 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        // Override point for customization after application launch.
-        MEMELib.setAppClientId("321294069143734", clientSecret: "qywqxg0pdyax13l6kvjt4f6pvk2ky1a0")
-        //MEMELib.setAppClientId("620076511065777", clientSecret: "b0pblbwrxmbgcwnt05pv0tlqt1l3zri3")
+        MEMELib.setAppClientId("<key>", clientSecret: "<secret_key>")
         return true
     }
 
